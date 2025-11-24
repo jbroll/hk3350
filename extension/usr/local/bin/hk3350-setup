@@ -47,6 +47,24 @@ fi
 echo
 echo "Setup complete!"
 echo
+echo "IMPORTANT: Configure Squeezelite for fixed ALSA volume"
+echo "======================================================="
+echo
+echo "Option 1: PiCorePlayer Web GUI (Recommended)"
+echo "  1. Go to Squeezelite Settings"
+echo "  2. Set 'Output Setting' to: -V \"\""
+echo "  3. This disables software volume control"
+echo "  4. Click 'Save' and restart Squeezelite"
+echo
+echo "Option 2: Manual Configuration"
+echo "  Edit /usr/local/etc/pcp/pcp.cfg and set:"
+echo "  ALSA_PARAMS=\"-V \\\"\\\"\""
+echo
+echo "Then configure the volume bridge:"
+echo "  1. Edit /usr/local/etc/hk3350-ir-volume.conf"
+echo "  2. Set ALSA_VOLUME to your desired fixed level (default: 80)"
+echo "  3. Start the bridge: lms-ir-volume-bridge.sh localhost 9090 <MAC>"
+echo
 echo "Test the configuration with:"
 echo "  irsend LIST \"\" \"\""
 echo "  irsend SEND_ONCE hk3350 vol-up"

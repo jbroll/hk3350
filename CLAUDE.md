@@ -4,20 +4,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-LIRC (Linux Infrared Remote Control) configuration files for Harman/Kardon receivers, specifically the HK3350 and HK3390 models. These configurations enable IR control via Raspberry Pi GPIO or other LIRC-compatible hardware.
+LIRC configuration and PiCorePlayer extension for controlling Harman/Kardon HK3350/HK3390 receivers via infrared. Provides hardware volume control through IR while maintaining fixed ALSA output level.
 
-The primary use case documented is integration with PiCorePlayer to send IR commands to an external amplifier, bypassing software volume control in favor of hardware amplifier volume control.
+**Primary documentation**: README.md contains complete setup, configuration, and troubleshooting information.
 
 ## Repository Structure
 
-- `hk3350.conf` - LIRC configuration for HK3350 receiver (primary, tested configuration)
-- `hk3350.txt` - Raw hex codes for HK3350 in simplified format
-- `hk3390.conf` - LIRC configuration for HK3390 receiver (reference)
-- `PLAN.md` - Detailed integration guide for PiCorePlayer + Jivelite + LIRC setup
-- `EXTENSION.md` - Documentation for the PiCorePlayer extension package
-- `extension/` - TinyCore extension directory structure
-- `build-extension.sh` - Script to build the tcz package
-- `hk3350-ir-volume.tcz.dep` - Extension dependency file
+- `README.md` - Complete documentation (consolidated from all guides)
+- `hk3350.conf` - LIRC configuration for HK3350 (primary, tested)
+- `hk3390.conf` - LIRC configuration for HK3390 (reference)
+- `hk3350.txt` - Raw hex codes
+- `extension/` - TinyCore extension source
+  - `usr/local/bin/ir_volume.sh` - Direct IR volume control
+  - `usr/local/bin/lms-ir-volume-bridge.sh` - LMS→IR volume bridge
+  - `usr/local/bin/hk3350-setup` - Installation script
+  - `usr/local/bin/squeezelite-ir-wrapper.sh` - Volume wrapper (experimental)
+  - `usr/local/etc/lirc/hk3350.conf` - LIRC config
+  - `usr/local/etc/hk3350-ir-volume.conf` - Configuration file
+- `build-extension.sh` - Build tcz package
+- `hk3350-ir-volume.tcz.dep` - Extension dependencies
 - `hk3350-ir-volume.tcz.info` - Extension metadata
 
 ## LIRC Configuration Format
@@ -112,49 +117,28 @@ When adding new buttons or modifying codes:
 
 The hex codes follow NEC protocol encoding. If creating a new remote config, start with timing parameters from an existing working config (hk3350.conf or hk3390.conf) and adjust if needed.
 
-## Building the PiCorePlayer Extension
+## Building and Installing Extension
 
-The repository includes a complete TinyCore extension package for easy installation:
-
+Build the extension:
 ```bash
-# Build the extension (requires squashfs-tools)
-./build-extension.sh
+./build-extension.sh  # Requires squashfs-tools
 ```
 
-This creates `hk3350-ir-volume.tcz` containing:
-- `/usr/local/bin/ir_volume.sh` - Volume control script
-- `/usr/local/bin/hk3350-setup` - Automated setup script
-- `/usr/local/etc/lirc/hk3350.conf` - LIRC configuration
-- `/usr/local/share/doc/hk3350-ir-volume/README` - Documentation
+Install on PiCorePlayer - see README.md "Quick Start" section for complete instructions.
 
-### Extension Installation
+## Volume Control Architecture
 
-Quick install on PiCorePlayer:
-
-```bash
-# Copy to PiCorePlayer
-scp hk3350-ir-volume.tcz* tc@<picoreplayer-ip>:/tmp/
-
-# SSH to PiCorePlayer
-ssh tc@<picoreplayer-ip>
-
-# Install
-sudo cp /tmp/hk3350-ir-volume.tcz* /mnt/mmcblk0p2/tce/optional/
-tce-load -i hk3350-ir-volume
-hk3350-setup
-
-# Backup via web GUI
+```
+Jivelite/LMS/Apps → LMS CLI → lms-ir-volume-bridge.sh → LIRC → HK3350
+                                        ↓
+                               ALSA fixed at 80%
 ```
 
-See EXTENSION.md for complete installation instructions and troubleshooting.
+Key points:
+- Squeezelite configured with `-V ""` to disable software volume control
+- ALSA output fixed at configured level (default 80%)
+- LMS volume changes trigger IR commands only
+- Prevents double adjustment (software + hardware)
+- All configuration in `/usr/local/etc/hk3350-ir-volume.conf`
 
-### Extension Architecture
-
-TinyCore extensions (tcz) are squashfs filesystems:
-- Built with `mksquashfs` using `-b 4k -no-xattrs` flags
-- Loop-mounted to `/tmp/tcloop/<name>/` at runtime
-- Files symlinked to system paths (typically under `/usr/local/`)
-- Dependencies listed in `.tcz.dep` (one per line)
-- Metadata in `.tcz.info` for extension managers
-
-The extension automatically depends on `lirc.tcz` and will pull it in if not installed.
+See README.md for complete configuration steps, troubleshooting, and technical details.
