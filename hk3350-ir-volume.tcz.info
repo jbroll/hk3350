@@ -1,0 +1,15 @@
+Title:          hk3350-ir-volume.tcz
+Description:    IR volume control for Harman/Kardon HK3350 via LIRC
+Version:        1.0
+Author:         HK3350-remote project
+Original-site:  https://github.com/[your-repo]/HK3350-remote
+Copying-policy: MIT
+Size:           8K
+Extension_by:   HK3350-remote
+Tags:           lirc infrared remote audio volume hk3350 harman kardon
+Comments:       Provides LIRC configuration and scripts for controlling
+                Harman/Kardon HK3350 amplifier volume via infrared.
+                Run 'hk3350-setup' after installation.
+                Requires LIRC extension and proper GPIO hardware setup.
+Change-log:     2025/11/24 v1.0 Initial release
+Current:        2025/11/24 v1.0

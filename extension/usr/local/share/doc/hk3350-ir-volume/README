@@ -1,0 +1,86 @@
+HK3350 IR Volume Control Extension for PiCorePlayer
+===================================================
+
+This extension provides infrared volume control for the Harman/Kardon HK3350
+amplifier, allowing PiCorePlayer to control hardware amplifier volume via LIRC
+instead of using software ALSA volume control.
+
+INSTALLATION
+------------
+
+1. Ensure LIRC is installed:
+   tce-load -wi lirc
+
+2. Load this extension:
+   tce-load -wi hk3350-ir-volume
+
+3. Run the setup script:
+   hk3350-setup
+
+4. Backup your configuration:
+   In PiCorePlayer web GUI: Main Menu → Backup → Backup Settings Now
+
+TESTING
+-------
+
+Test LIRC configuration:
+  irsend LIST "" ""
+  irsend SEND_ONCE hk3350 vol-up
+  irsend SEND_ONCE hk3350 vol-dn
+
+Test volume control script:
+  ir_volume.sh up
+  ir_volume.sh down
+  ir_volume.sh power
+
+JIVELITE INTEGRATION
+--------------------
+
+To integrate with Jivelite for hardware volume control:
+
+1. Locate Jivelite settings directory:
+   /mnt/mmcblk0p2/tce/etc/jivelite/
+
+2. Configure Jivelite to use the ir_volume.sh script for volume control
+   (exact configuration depends on Jivelite version)
+
+3. Backup configuration
+
+HARDWARE SETUP
+--------------
+
+This extension assumes you have:
+- Raspberry Pi with GPIO configured for IR transmission
+- LIRC configured to use appropriate GPIO pin
+- IR output wired to HK3350 receiver's remote input
+
+Consult LIRC documentation for GPIO configuration details.
+
+AVAILABLE COMMANDS
+------------------
+
+IR codes configured in hk3350.conf:
+  power, cd, radio, aux, video, tape1
+  vol-up, vol-dn
+  tuning-, tuning+, am-fm
+  preset_scan, tapemon
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 0
+
+FILES
+-----
+
+/usr/local/bin/ir_volume.sh       - Volume control script
+/usr/local/bin/hk3350-setup       - Setup and configuration script
+/usr/local/etc/lirc/hk3350.conf   - LIRC remote configuration
+
+TROUBLESHOOTING
+---------------
+
+If IR commands don't work:
+1. Verify LIRC is running: ps aux | grep lircd
+2. Check configuration: cat /etc/lirc/lircd.conf
+3. Test with irsend commands directly
+4. Verify hardware connections
+5. Check LIRC logs for errors
+
+For support, visit: https://github.com/[your-repo]/HK3350-remote

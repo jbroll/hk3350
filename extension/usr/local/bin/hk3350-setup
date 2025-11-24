@@ -1,0 +1,60 @@
+#!/bin/sh
+#
+# HK3350 IR Volume Control Setup Script
+# Configures LIRC with HK3350 remote configuration
+#
+
+LIRC_CONF_DIR="/etc/lirc"
+LIRC_CONF_FILE="$LIRC_CONF_DIR/lircd.conf"
+SOURCE_CONF="/usr/local/etc/lirc/hk3350.conf"
+
+echo "HK3350 IR Volume Control Setup"
+echo "==============================="
+echo
+
+# Check if LIRC is installed
+if ! command -v irsend >/dev/null 2>&1; then
+    echo "ERROR: LIRC is not installed!"
+    echo "Please install LIRC first:"
+    echo "  tce-load -wi lirc"
+    exit 1
+fi
+
+# Create LIRC config directory if it doesn't exist
+if [ ! -d "$LIRC_CONF_DIR" ]; then
+    echo "Creating LIRC configuration directory..."
+    sudo mkdir -p "$LIRC_CONF_DIR"
+fi
+
+# Backup existing configuration if present
+if [ -f "$LIRC_CONF_FILE" ]; then
+    echo "Backing up existing LIRC configuration..."
+    sudo cp "$LIRC_CONF_FILE" "$LIRC_CONF_FILE.backup.$(date +%Y%m%d-%H%M%S)"
+fi
+
+# Install HK3350 configuration
+echo "Installing HK3350 LIRC configuration..."
+sudo cp "$SOURCE_CONF" "$LIRC_CONF_FILE"
+
+# Restart LIRC daemon
+echo "Restarting LIRC daemon..."
+if [ -f /usr/local/etc/init.d/lircd ]; then
+    sudo /usr/local/etc/init.d/lircd restart
+else
+    echo "WARNING: LIRC init script not found. You may need to restart LIRC manually."
+fi
+
+echo
+echo "Setup complete!"
+echo
+echo "Test the configuration with:"
+echo "  irsend LIST \"\" \"\""
+echo "  irsend SEND_ONCE hk3350 vol-up"
+echo
+echo "Test volume control with:"
+echo "  ir_volume.sh up"
+echo "  ir_volume.sh down"
+echo
+echo "Don't forget to backup your configuration:"
+echo "  In PiCorePlayer web GUI: Main Menu → Backup → Backup Settings Now"
+echo
